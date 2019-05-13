@@ -1,3 +1,4 @@
+
 struct Cursor
 {
   uint8_t x;
@@ -9,7 +10,6 @@ struct Cursor
 Point clickPoint { 16, 16 };
 Cursor playerCursor { 64, 32, 3, 1 };
 Rect rectangle { 16, 16, 32, 32 };
-Point cursorGlobalPos { 64, 32 };
 
 Rect createRectangleFromPoints(int16_t x0, int16_t y0, int16_t x1, int16_t y1)
 {
@@ -37,25 +37,21 @@ void moveCursor()
     if (playerCursor.y >= 5) {
       --playerCursor.y;
     }
-    --cursorGlobalPos.y;
   }
   if (arduboy.pressed(DOWN_BUTTON)) {
     if (playerCursor.y <= 59) {
       ++playerCursor.y;
     }
-    ++cursorGlobalPos.y;
   }
   if (arduboy.pressed(LEFT_BUTTON)) {
     if (playerCursor.x >= 5) {
       --playerCursor.x;
     }
-    --cursorGlobalPos.x;
   }
   if (arduboy.pressed(RIGHT_BUTTON)) {
     if (playerCursor.x <= 123) {
       ++playerCursor.x;
     }
-    ++cursorGlobalPos.x;
   }
 }
 
