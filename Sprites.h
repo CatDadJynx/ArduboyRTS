@@ -1,4 +1,4 @@
-PROGMEM const unsigned char rock[] = {
+PROGMEM const unsigned char rockSprite[] = {
 // Bitmap Image. No transparency
 // Width: 16 Height: 16
 16, 16, 
@@ -6,7 +6,7 @@ PROGMEM const unsigned char rock[] = {
 0x1F, 0x3F, 0xF0, 0xC0, 0xA0, 0x90, 0x98, 0x91, 0x90, 0x80, 0x80, 0x88, 0xB1, 0xC0, 0x78, 0x0F, 
 };
 
-PROGMEM const unsigned char tree[] = {
+PROGMEM const unsigned char treeSprite[] = {
 // Bitmap Image. No transparency
 // Width: 16 Height: 16
 16, 16, 
