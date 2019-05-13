@@ -1,3 +1,4 @@
+#include "Movement.h"
 
 struct Timer {
   unsigned long currentMillis;
@@ -5,7 +6,6 @@ struct Timer {
 };
 
 Timer timer;
-Point personPos;
 constexpr uint8_t personMax = 40;
 
 uint8_t personFrame = 0;
@@ -29,7 +29,7 @@ Person people[personMax]
   // This set of braces is people[0]
   {
     // This is people[0].position
-    { playerCursor.x, playerCursor.y },
+    { playerCursor.position.x, playerCursor.position.y },
     // This is people[0].state
     PersonState::notSelected
   }
@@ -80,7 +80,7 @@ void personWalk() {
 
 void personSelection() {
   for (uint8_t i = 0; i < personCount; i++) {
-    if (people[i].state == PersonState::notSelected && arduboy.collide(toLocal(people[i].position), rectangle)){
+    if (people[i].state == PersonState::notSelected && arduboy.collide(toLocal(people[i].position), rectangle)) {
       people[i].state = PersonState::selected;
       if (people[i].state == PersonState::selected) {
         ++personSelect;
@@ -95,18 +95,36 @@ void personSelection() {
 
 void addPersonAt(int16_t x, int16_t y)
 {
-    // Avoid trying to add more than the maximum
-    if (personCount < personMax)
-    {
-      // Person goes on the end of the list
-      people[personCount].position = {x, y};
-      ++personCount;
-    }
+  // Avoid trying to add more than the maximum
+  if (personCount < personMax)
+  {
+    // Person goes on the end of the list
+    people[personCount].position = {x, y};
+    ++personCount;
+  }
 }
 
-void addPersonAtCursor(){
-   if (arduboy.justPressed(B_BUTTON)) {
-    addPersonAt(playerCursor.x + camera.x, playerCursor.y + camera.y);
+void addPersonAtCursor() {
+  if (arduboy.justPressed(B_BUTTON)) {
+    addPersonAt(playerCursor.position.x + camera.x, playerCursor.position.y + camera.y);
+  }
+}
+
+void movePerson()
+{
+  for (uint8_t i = 0; i < personMax; ++i)
+  {
+    if (people[i].state == PersonState::selected)
+    {
+      const Point between = vectorBetween(people[i].position, playerCursor.position);
+      people[i].position = { (people[i].position.x + between.x), (people[i].position.y + between.y) };
+    }
+  }
+}
+
+void unitMove() {
+  if (arduboy.justPressed(A_BUTTON)) {
+    movePerson();
   }
 }
 
