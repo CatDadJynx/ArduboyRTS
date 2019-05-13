@@ -28,6 +28,7 @@ void loop()
   personSelection();
   drawPerson();
   addPersonAtCursor();
+  unitMove();
   personWalk();
   drawDebugInfo();
   arduboy.display();
