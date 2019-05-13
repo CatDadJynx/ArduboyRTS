@@ -1,44 +1,47 @@
 #include "GameSprites.h"
 #include "camera.h"
 
+enum class ResourceState : uint8_t
+{
+  Active,
+  Inactive
+};
+
+struct Resource
+{
+  Point position;
+  ResourceState state;
+};
+
+// This will take the same amount of RAM
 constexpr uint8_t resourceMax = 30;
 
-uint16_t rockX[resourceMax];
-uint16_t rockY[resourceMax];
+Resource rock[resourceMax];
+Resource tree[resourceMax];
 
-void populateRock(){
-  for (int x = 0; x < resourceMax; x++) {
-    rockX[x] = random(0, 252);
-    rockY[x] = random(0, 252);
+void populateResources(){
+  for(uint8_t i = 0; i < resourceMax; i++){
+    rock[i].position.x = random(0,250);
+    rock[i].position.y = random(0,250);
+    rock[i].state = ResourceState::Active;
+    tree[i].position.x = random(0,250);
+    tree[i].position.y = random(0,250);
+    tree[i].state = ResourceState::Active;
   }
 }
 
 void drawRock() {
-  for (uint8_t x = 0; x < resourceMax; x++) {
-    Sprites::drawSelfMasked(rockX[x] + camera.x, rockY[x] + camera.y, rock, 0);
-  }
-}
-
-uint16_t treeX[resourceMax];
-uint16_t treeY[resourceMax];
-
-void populateTree(){
-  for (int x = 0; x < resourceMax; x++) {
-    treeX[x] = random(0, 252);
-    treeY[x] = random(0, 252);
+  for (uint8_t i = 0; i < resourceMax; i++) {
+    Sprites::drawSelfMasked(rock[i].position.x  - camera.x, rock[i].position.y  - camera.y, rockSprite, 0);
   }
 }
 
 void drawTree() {
-  for (uint8_t x = 0; x < resourceMax; x++) {
-    Sprites::drawSelfMasked(treeX[x] + camera.x, treeY[x] + camera.y, tree, 0);
+  for (uint8_t i = 0; i < resourceMax; i++) {
+    Sprites::drawSelfMasked(tree[i].position.x  - camera.x, tree[i].position.y  - camera.y, treeSprite, 0);
   }
 }
 
-void populateResources(){
-    populateRock();
-    populateTree();
-}
 
 void resourceDraw(){
   drawRock();
