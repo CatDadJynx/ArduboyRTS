@@ -29,7 +29,7 @@ Person people[personMax]
   // This set of braces is people[0]
   {
     // This is people[0].position
-    { cursorGlobalPos.x, cursorGlobalPos.y },
+    { playerCursor.x, playerCursor.y },
     // This is people[0].state
     PersonState::notSelected
   }
@@ -42,7 +42,7 @@ uint8_t personSelect;
 
 void drawPerson() {
   for (uint8_t i = 0; i < personCount; i++) {
-    Sprites::drawSelfMasked(people[i].position.x  - camera.x, people[i].position.y  - camera.y, personSprite, personFrame);
+    Sprites::drawSelfMasked(people[i].position.x - camera.x, people[i].position.y  - camera.y, personSprite, personFrame);
   }
 }
 
@@ -80,7 +80,7 @@ void personWalk() {
 
 void personSelection() {
   for (uint8_t i = 0; i < personCount; i++) {
-    if (people[i].state == PersonState::notSelected && arduboy.collide(people[i].position, rectangle)){
+    if (people[i].state == PersonState::notSelected && arduboy.collide(toLocal(people[i].position), rectangle)){
       people[i].state = PersonState::selected;
       if (people[i].state == PersonState::selected) {
         ++personSelect;
@@ -93,8 +93,8 @@ void personSelection() {
   }
 }
 
-void addPersonAt(uint16_t x, uint16_t y)
-{ if (arduboy.justPressed(B_BUTTON)) {
+void addPersonAt(int16_t x, int16_t y)
+{
     // Avoid trying to add more than the maximum
     if (personCount < personMax)
     {
@@ -102,6 +102,11 @@ void addPersonAt(uint16_t x, uint16_t y)
       people[personCount].position = {x, y};
       ++personCount;
     }
+}
+
+void addPersonAtCursor(){
+   if (arduboy.justPressed(B_BUTTON)) {
+    addPersonAt(playerCursor.x + camera.x, playerCursor.y + camera.y);
   }
 }
 
@@ -120,8 +125,8 @@ void drawDebugInfo()
   arduboy.print("");
 
   arduboy.setCursor(0, 40);
-  arduboy.print(people[1].position.x);
+  arduboy.print(personCount);
 
   arduboy.setCursor(20, 40);
-  arduboy.print(people[1].position.y);
+  arduboy.print(personSelect);
 }
