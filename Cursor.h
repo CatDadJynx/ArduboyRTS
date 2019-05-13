@@ -1,14 +1,12 @@
-
 struct Cursor
 {
-  uint8_t x;
-  uint8_t y;
-  uint8_t radius;
-  uint8_t colour;
+  Point position {64, 32};
+  uint8_t radius = 3;
+  uint8_t colour = 1;
 };
 
 Point clickPoint { 16, 16 };
-Cursor playerCursor { 64, 32, 3, 1 };
+Cursor playerCursor;
 Rect rectangle { 16, 16, 32, 32 };
 
 Rect createRectangleFromPoints(int16_t x0, int16_t y0, int16_t x1, int16_t y1)
@@ -23,7 +21,7 @@ Rect createRectangleFromPoints(int16_t x0, int16_t y0, int16_t x1, int16_t y1)
 
 void drawCursor()
 {
-  arduboy.fillCircle(playerCursor.x, playerCursor.y, playerCursor.radius, playerCursor.colour);
+  arduboy.fillCircle(playerCursor.position.x, playerCursor.position.y, playerCursor.radius, playerCursor.colour);
 }
 
 void drawRectangle()
@@ -34,23 +32,23 @@ void drawRectangle()
 void moveCursor()
 {
   if (arduboy.pressed(UP_BUTTON)) {
-    if (playerCursor.y >= 5) {
-      --playerCursor.y;
+    if (playerCursor.position.y >= 5) {
+      --playerCursor.position.y;
     }
   }
   if (arduboy.pressed(DOWN_BUTTON)) {
-    if (playerCursor.y <= 59) {
-      ++playerCursor.y;
+    if (playerCursor.position.y <= 59) {
+      ++playerCursor.position.y;
     }
   }
   if (arduboy.pressed(LEFT_BUTTON)) {
-    if (playerCursor.x >= 5) {
-      --playerCursor.x;
+    if (playerCursor.position.x >= 5) {
+      --playerCursor.position.x;
     }
   }
   if (arduboy.pressed(RIGHT_BUTTON)) {
-    if (playerCursor.x <= 123) {
-      ++playerCursor.x;
+    if (playerCursor.position.x <= 123) {
+      ++playerCursor.position.x;
     }
   }
 }
@@ -59,13 +57,13 @@ void handleCursorInput()
 {
   if (arduboy.justPressed(A_BUTTON))
   {
-    clickPoint = { playerCursor.x, playerCursor.y };
-    rectangle = createRectangleFromPoints(playerCursor.x, playerCursor.y, (rectangle.x + rectangle.width), (rectangle.y + rectangle.height));
+    clickPoint = { playerCursor.position.x, playerCursor.position.y };
+    rectangle = createRectangleFromPoints(playerCursor.position.x, playerCursor.position.y, (rectangle.x + rectangle.width), (rectangle.y + rectangle.height));
   }
 
   if (arduboy.pressed(A_BUTTON))
   {
-    rectangle = createRectangleFromPoints(clickPoint.x, clickPoint.y, playerCursor.x, playerCursor.y);
+    rectangle = createRectangleFromPoints(clickPoint.x, clickPoint.y, playerCursor.position.x, playerCursor.position.y);
   }
   if (!arduboy.pressed(A_BUTTON)) {
     rectangle.x = 0;
