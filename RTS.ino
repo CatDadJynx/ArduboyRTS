@@ -8,10 +8,9 @@ void setup()
 {
   arduboy.boot();
   arduboy.flashlight();
-  arduboy.setFrameRate(60);
+  arduboy.setFrameRate(75);
   arduboy.initRandomSeed();
   populateResources();
-  populatePerson();
   arduboy.clear();
 }
 
@@ -19,16 +18,18 @@ void loop()
 {
  if (!arduboy.nextFrame())
     return;
+    arduboy.clear();
   arduboy.pollButtons();
   timer.currentMillis = millis();
-  handleCursorInput();
   cameraInput();
-  arduboy.clear();
+  handleCursorInput();
   resourceDraw();
-  drawPerson();
-  personWalk();
   drawCursor();
   drawRectangle();
-  //drawDebugInfo();
+  personSelection();
+  drawPerson();
+  addPersonAt(cursorGlobalPos.x,cursorGlobalPos.y);
+  personWalk();
+  drawDebugInfo();
   arduboy.display();
 }
