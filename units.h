@@ -1,102 +1,49 @@
+#include "GameSprites.h"
+#include "camera.h"
 
-struct Timer {
-  unsigned long currentMillis;
-  unsigned long previousMillis = 0;
+enum class ResourceState : uint8_t
+{
+  Active,
+  Inactive
 };
 
-Timer timer;
-Point personPos;
-
-constexpr uint8_t personMax = 50;
-uint8_t personFrame = 0;
-uint8_t walk; //turn into enum class
-uint16_t personX[personMax];
-uint16_t personY[personMax];
-uint8_t personCount;
-uint8_t personSelect;
-uint8_t personState[personMax];
-
-void populatePerson() {
-  personX[0] = playerCursor.x;
-  personY[0] = playerCursor.y;
-  personCount += 1;
-}
-
-void drawPerson() {
-  for (uint8_t x = 0; x < personCount; x++) {
-    Sprites::drawSelfMasked(personX[x] + camera.x, personY[x] + camera.y, personSprite, personFrame);
-    personPos.x = personX[x];
-    personPos.y = personY[x];
-  }
-}
-
-void animatePerson() {
-  if (personFrame < 2) {
-    ++personFrame;
-  }
-  else
-    personFrame = 0;
-}
-
-void personWalk() {
-  for (uint8_t x = 0; x < personCount; x++) {
-    if (timer.currentMillis - timer.previousMillis >= 500) {
-      walk = random(0, 4);
-      switch ( walk ) {
-        case 0:
-          ++personX[x];
-          animatePerson();
-          break;
-        case 1:
-          --personX[x];
-          animatePerson();
-          break;
-        case 2:
-          ++personY[x];
-          animatePerson();
-          break;
-        case 3:
-          --personY[x];
-          animatePerson();
-          break;
-      }
-      timer.previousMillis = timer.currentMillis;
-    }
-  }
-}
-
-void personSelection() {
-  for (uint8_t x = 0; x < personCount; x++) {
-    if (personState[x] == 0 && arduboy.collide(personPos, rectangle)) {
-      personState[x] = 1;
-      if (personState[x] = 1){
-        ++personSelect;  
-      }
-    }
-    if (arduboy.pressed(B_BUTTON)){
-      personState[x] = 0;
-      personSelect = 0;
-    }
-  }
-}
-
-void drawDebugInfo()
+struct Resource
 {
-  arduboy.setCursor(0, 0);
-  arduboy.print(playerCursor.x);
+  Point position;
+  ResourceState state;
+};
 
-  arduboy.setCursor(20, 0);
-  arduboy.print(playerCursor.y);
+// This will take the same amount of RAM
+constexpr uint8_t resourceMax = 30;
 
-  arduboy.setCursor(0, 20);
-  arduboy.print(rectangle.x);
+Resource rock[resourceMax];
+Resource tree[resourceMax];
 
-  arduboy.setCursor(20, 20);
-  arduboy.print(rectangle.y);
+void populateResources(){
+  for(uint8_t i = 0; i < resourceMax; i++){
+    rock[i].position.x = random(0,250);
+    rock[i].position.y = random(0,250);
+    rock[i].state = ResourceState::Active;
+    tree[i].position.x = random(0,250);
+    tree[i].position.y = random(0,250);
+    tree[i].state = ResourceState::Active;
+  }
+}
 
-  arduboy.setCursor(0, 40);
-  arduboy.print(personX[0]);
+void drawRock() {
+  for (uint8_t i = 0; i < resourceMax; i++) {
+    Sprites::drawSelfMasked(rock[i].position.x  - camera.x, rock[i].position.y  - camera.y, rockSprite, 0);
+  }
+}
 
-  arduboy.setCursor(20, 40);
-  arduboy.print(personSelect);
+void drawTree() {
+  for (uint8_t i = 0; i < resourceMax; i++) {
+    Sprites::drawSelfMasked(tree[i].position.x  - camera.x, tree[i].position.y  - camera.y, treeSprite, 0);
+  }
+}
+
+
+void resourceDraw(){
+  drawRock();
+  drawTree();
 }
