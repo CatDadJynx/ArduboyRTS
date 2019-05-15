@@ -1,4 +1,3 @@
-#include "Movement.h"
 
 struct Timer {
   unsigned long currentMillis;
@@ -80,7 +79,7 @@ void personWalk() {
 
 void personSelection() {
   for (uint8_t i = 0; i < personCount; i++) {
-    if (people[i].state == PersonState::notSelected && pointRectIntersect(toLocal(people[i].position), rectangle)) {
+    if (people[i].state == PersonState::notSelected && intersect(toLocal(people[i].position), rectangle)) {
       people[i].state = PersonState::selected;
       if (people[i].state == PersonState::selected) {
         ++personSelect;
@@ -117,10 +116,9 @@ void movePerson()
     if (people[i].state == PersonState::selected)
     {
       const VectorF between = vectorBetween(people[i].position, playerCursor.globalPosition);
-      const VectorF direction = normalise(between, people[i].position, playerCursor.globalPosition);
+      const VectorF direction = normalise(between);
       const float speed = 2.5f;
       people[i].position = { (people[i].position.x + (direction.x * speed)), (people[i].position.y + (direction.y * speed)) };
-
     }
   }
 }

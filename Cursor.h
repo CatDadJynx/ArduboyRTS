@@ -1,4 +1,4 @@
-#include "GameObj.h"
+#include "PointF.h"
 
 struct Cursor
 {
