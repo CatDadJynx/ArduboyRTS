@@ -85,49 +85,27 @@ void personSelection() {
         ++personSelect;
       }
     }
-    if (arduboy.pressed(A_BUTTON) && arduboy.pressed(B_BUTTON)) {
-      people[i].state = PersonState::notSelected;
-      personSelect = 0;
-    }
   }
 }
 
-void addPersonAt(int16_t x, int16_t y)
+void moveSelectedPeople()
 {
-  // Avoid trying to add more than the maximum
-  if (personCount < personMax)
-  {
-    // Person goes on the end of the list
-    people[personCount].position = {x, y};
-    ++personCount;
-  }
-}
-
-void addPersonAtCursor() {
-  if (arduboy.justPressed(B_BUTTON)) {
-    addPersonAt(playerCursor.localPosition.x + camera.x, playerCursor.localPosition.y + camera.y);
-  }
-}
-
-void movePerson()
-{
+ if (playerCursor.lastGlobalPosition.x != 0 && playerCursor.lastGlobalPosition.y != 0) {
   for (uint8_t i = 0; i < personMax; ++i)
   {
     if (people[i].state == PersonState::selected)
     {
-      const VectorF between = vectorBetween(people[i].position, playerCursor.globalPosition);
-      const VectorF direction = normalise(between);
-      const float speed = 2.5f;
-      people[i].position = { (people[i].position.x + (direction.x * speed)), (people[i].position.y + (direction.y * speed)) };
+        const VectorF between = vectorBetween(people[i].position, playerCursor.lastGlobalPosition);
+        const VectorF direction = normalise(between);
+        const float speed = 1.1f;
+        if ((people[i].position.x != playerCursor.lastGlobalPosition.x) && (people[i].position.y != playerCursor.lastGlobalPosition.y))
+        {
+          people[i].position = { (people[i].position.x + (direction.x * speed)), (people[i].position.y + (direction.y * speed)) };
+        }
+      }
     }
   }
 }
-
-void unitMove() {
-  if (arduboy.justPressed(A_BUTTON)) {
-        movePerson();
-}}
-
 
 void drawDebugInfo()
 {

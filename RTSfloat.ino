@@ -2,6 +2,7 @@
 Arduboy2 arduboy;
 #include "Resources.h"
 #include "units.h"
+#include "playerInput.h"
 
 void setup()
 {
@@ -26,10 +27,11 @@ void loop()
   drawCursor();
   drawRectangle();
   personSelection();
+  deselectAll();
   drawPerson();
-  addPersonAtCursor();
-  unitMove();
   personWalk();
+  //addPersonAtCursor();
+  unitMove();
   drawDebugInfo();
   arduboy.display();
 }
