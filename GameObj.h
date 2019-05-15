@@ -4,6 +4,12 @@ struct PointF
   float y;
 };
 
+struct VectorF
+{
+  float x;
+  float y;
+};
+
 bool pointRectIntersect(PointF point, Rect rect)
 {
   return ((point.x >= rect.x) && (point.x < rect.x + rect.width) &&

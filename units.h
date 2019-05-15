@@ -116,17 +116,20 @@ void movePerson()
   {
     if (people[i].state == PersonState::selected)
     {
-      const PointF between = vectorBetween(people[i].position, playerCursor.globalPosition);
-      people[i].position = { (people[i].position.x + between.x), (people[i].position.y + between.y) };
+      const VectorF between = vectorBetween(people[i].position, playerCursor.globalPosition);
+      const VectorF direction = normalise(between, people[i].position, playerCursor.globalPosition);
+      const float speed = 2.5f;
+      people[i].position = { (people[i].position.x + (direction.x * speed)), (people[i].position.y + (direction.y * speed)) };
+
     }
   }
 }
 
 void unitMove() {
   if (arduboy.justPressed(A_BUTTON)) {
-    movePerson();
-  }
-}
+        movePerson();
+}}
+
 
 void drawDebugInfo()
 {

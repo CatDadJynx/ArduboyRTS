@@ -8,16 +8,16 @@ struct PointPos{
 PointPos camera;
 
 void cameraInput(){
-  if(arduboy.pressed(UP_BUTTON) && playerCursor.position.y <= 4) {
+  if(arduboy.pressed(UP_BUTTON) && playerCursor.localPosition.y <= 4) {
     camera.y -= 1;
   }
-  if(arduboy.pressed(DOWN_BUTTON) && playerCursor.position.y >= 60) {
+  if(arduboy.pressed(DOWN_BUTTON) && playerCursor.localPosition.y >= 60) {
     camera.y += 1;
   }
-  if(arduboy.pressed(LEFT_BUTTON) && playerCursor.position.x <= 4) {
+  if(arduboy.pressed(LEFT_BUTTON) && playerCursor.localPosition.x <= 4) {
     camera.x -= 1;
   }
-  if(arduboy.pressed(RIGHT_BUTTON) && playerCursor.position.x >= 124) {
+  if(arduboy.pressed(RIGHT_BUTTON) && playerCursor.localPosition.x >= 124) {
     camera.x += 1;
   }
 }
