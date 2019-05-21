@@ -69,16 +69,19 @@ void unitMove()
 {
   if (arduboy.justPressed(B_BUTTON))
   {
-    // Set 'lastGlobalPosition'
-    playerCursor.lastGlobalPosition = playerCursor.globalPosition;
+    for (uint8_t i = 0; i < personMax; ++i) {
+      if (people[i].state == PersonState::Selected)
+        people[i].state = PersonState::Moving;
+        playerCursor.lastGlobalPosition = playerCursor.globalPosition;
     }
-    moveSelectedPeople();
+  }
+  moveSelectedPeople();
 }
 
 void deselectAll() {
   if (arduboy.pressed(B_BUTTON) && arduboy.pressed(A_BUTTON)) {
     for (uint8_t i = 0; i < personMax; i++) {
-      people[i].state = PersonState::notSelected;
+      people[i].state = PersonState::Idle;
       personSelect = 0;
       playerCursor.lastGlobalPosition.x = 0;
       playerCursor.lastGlobalPosition.y = 0;
@@ -86,8 +89,7 @@ void deselectAll() {
   }
 }
 
-void addPersonAt(int16_t x, int16_t y)
-{
+void addPersonAt(int16_t x, int16_t y) {
   // Avoid trying to add more than the maximum
   if (personCount < personMax)
   {

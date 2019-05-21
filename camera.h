@@ -16,3 +16,13 @@ PointF toGlobal(PointF localPoint)
 {
   return { localPoint.x + camera.x, localPoint.y + camera.y };
 }
+
+Point toLocal(Point globalPoint)
+{
+  return { globalPoint.x - camera.x, globalPoint.y - camera.y };
+}
+
+Point toGlobal(Point localPoint)
+{
+  return { localPoint.x + camera.x, localPoint.y + camera.y };
+}

@@ -12,8 +12,9 @@ uint8_t walk; //turn into enum class
 
 enum class PersonState : uint8_t
 {
-  notSelected,
-  selected
+  Idle,
+  Selected,
+  Moving,
 };
 
 struct Person
@@ -30,7 +31,7 @@ Person people[personMax]
     // This is people[0].position
     { playerCursor.localPosition.x, playerCursor.localPosition.y },
     // This is people[0].state
-    PersonState::notSelected
+    PersonState::Idle
   }
   // The rest of your people can be left out and they'll just be 'zero initialised'
 };
@@ -41,7 +42,16 @@ uint8_t personSelect;
 
 void drawPerson() {
   for (uint8_t i = 0; i < personCount; i++) {
-    Sprites::drawSelfMasked(people[i].position.x - camera.x, people[i].position.y  - camera.y, personSprite, personFrame);
+    const PointF localPosition = toLocal(people[i].position);
+    Sprites::drawSelfMasked(localPosition.x, localPosition.y, personSprite, personFrame);
+    constexpr uint8_t highlightMargin = 2;
+    if (people[i].state == PersonState::Selected || people[i].state == PersonState::Moving) {
+      const int16_t highlightRectangleX = (static_cast<int16_t>(localPosition.x) - highlightMargin);
+      const int16_t highlightRectangleY = (static_cast<int16_t>(localPosition.y) - highlightMargin);
+      const int16_t highlightRectangleWidth = (5 + (highlightMargin * 2));
+      const int16_t highlightRectangleHeight = (5 + (highlightMargin * 2));
+      arduboy.drawRect(highlightRectangleX, highlightRectangleY, highlightRectangleWidth, highlightRectangleHeight);
+    }
   }
 }
 
@@ -79,9 +89,9 @@ void personWalk() {
 
 void personSelection() {
   for (uint8_t i = 0; i < personCount; i++) {
-    if (people[i].state == PersonState::notSelected && intersect(toLocal(people[i].position), rectangle)) {
-      people[i].state = PersonState::selected;
-      if (people[i].state == PersonState::selected) {
+    if (people[i].state == PersonState::Idle && intersect(toLocal(people[i].position), rectangle)) {
+      people[i].state = PersonState::Selected;
+      if (people[i].state == PersonState::Selected) {
         ++personSelect;
       }
     }
@@ -90,7 +100,7 @@ void personSelection() {
 
 void moveSelectedPeople() {
   for (uint8_t i = 0; i < personMax; ++i) {
-    if (people[i].state == PersonState::selected) {
+    if (people[i].state == PersonState::Moving) {
       const VectorF between = vectorBetween(people[i].position, playerCursor.lastGlobalPosition);
       const float distance = magnitude(between);
       const VectorF direction = normalise(between);
@@ -99,10 +109,16 @@ void moveSelectedPeople() {
         const VectorF direction = { between.x / distance, between.y / distance };
         people[i].position = { (people[i].position.x + (direction.x * speed)), (people[i].position.y + (direction.y * speed)) };
       }
+      /*if (distance < 1) {
+        for (uint8_t j = 0; j < resourceMax; ++j) {
+          if (tree[j].state == ResourceState::Active && people[i].state == PersonState::Selected || people[i].state == PersonState::Moving) {
+            if (intersect(
+          }
+        }
+      }*/
     }
   }
 }
-
 
 
 void drawDebugInfo()
