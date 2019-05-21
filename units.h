@@ -88,22 +88,21 @@ void personSelection() {
   }
 }
 
-void moveSelectedPeople(){
-  if (playerCursor.lastGlobalPosition.x != 0 && playerCursor.lastGlobalPosition.y != 0) {
-     for (uint8_t i = 0; i < personMax; ++i){
-       if (distance(people[i].position, playerCursor.lastGlobalPosition) > 1){
-          if (people[i].state == PersonState::selected){
-            const VectorF between = vectorBetween(people[i].position, playerCursor.lastGlobalPosition);
-            const VectorF direction = normalise(between);
-            const float speed = 1.1f;
-            if ((people[i].position.x != playerCursor.lastGlobalPosition.x) && (people[i].position.y != playerCursor.lastGlobalPosition.y)){
-              people[i].position = { (people[i].position.x + (direction.x * speed)), (people[i].position.y + (direction.y * speed)) };
-            }
-          }
-        }
+void moveSelectedPeople() {
+  for (uint8_t i = 0; i < personMax; ++i) {
+    if (people[i].state == PersonState::selected) {
+      const VectorF between = vectorBetween(people[i].position, playerCursor.lastGlobalPosition);
+      const float distance = magnitude(between);
+      const VectorF direction = normalise(between);
+      const float speed = 1.1f;
+      if (distance > 1 && playerCursor.lastGlobalPosition.x != 0 && playerCursor.lastGlobalPosition.y != 0) {
+        const VectorF direction = { between.x / distance, between.y / distance };
+        people[i].position = { (people[i].position.x + (direction.x * speed)), (people[i].position.y + (direction.y * speed)) };
+      }
     }
-  } 
+  }
 }
+
 
 
 void drawDebugInfo()
