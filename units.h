@@ -161,7 +161,7 @@ void resourceRegen() {
             if (tree[i].regenTimerCheck >= 10) {
               tree[i].resourceFrame = 0;
               tree[i].state = ResourceState::Active;
-              tree[i].regenTimerTest = 0;
+              tree[i].regenTimerCheck = 0;
             }
         }
       }
