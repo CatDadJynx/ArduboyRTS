@@ -6,6 +6,14 @@ struct PointF
   float y;
 };
 
+struct RectF
+{
+  float x;
+  float y;
+  float width;
+  float height;
+};
+
 VectorF vectorBetween(PointF point0, PointF point1)
 {
   return { (point1.x - point0.x), (point1.y - point0.y) };
@@ -28,7 +36,7 @@ bool intersect(PointF point, Rect rect)
   return ((point.x >= rect.x) && (point.x < rect.x + rect.width) && (point.y >= rect.y) && (point.y < rect.y + rect.height));
 }
 
-bool intersect(Rect rect1, Rect rect2)
+bool intersect(Rect rect1, RectF rect2)
 {
   return !(rect2.x                >= rect1.x + rect1.width  ||
            rect2.x + rect2.width  <= rect1.x                ||

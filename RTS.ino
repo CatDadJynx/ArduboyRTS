@@ -20,7 +20,9 @@ void loop()
     return;
     arduboy.clear();
   arduboy.pollButtons();
-  timer.currentMillis = millis();
+  timer.peopleCurrentMillis = millis();
+  timer.resourceCurrentMillis = millis();
+  timer.regenCurrentMillis = millis();
   player();
   units();
   resources();
@@ -37,6 +39,7 @@ void units(){
 
 void resources(){
   resourceDraw();
+  resourceRegen();
 }
 
 void player(){

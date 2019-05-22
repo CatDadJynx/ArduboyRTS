@@ -1,7 +1,11 @@
 
 struct Timer {
-  unsigned long currentMillis;
-  unsigned long previousMillis = 0;
+  unsigned long peopleCurrentMillis;
+  unsigned long peoplePreviousMillis = 0;
+  unsigned long resourceCurrentMillis;
+  unsigned long resourcePreviousMillis = 0;
+  unsigned long regenCurrentMillis;
+  unsigned long regenPreviousMillis = 0;
 };
 
 Timer timer;
@@ -19,8 +23,15 @@ enum class PersonState : uint8_t
 
 struct Person
 {
+  static constexpr uint8_t width = 5;
+  static constexpr uint8_t height = 8;
   PointF position;
   PersonState state;
+
+  RectF getBounds() const
+  {
+    return { position.x, position.y, width, height };
+  }
 };
 
 Person people[personMax]
@@ -64,7 +75,7 @@ void animatePerson() {
 }
 
 void personWalk() {
-  if (timer.currentMillis - timer.previousMillis >= 500) {
+  if (timer.peopleCurrentMillis - timer.peoplePreviousMillis >= 500) {
     for (uint8_t i = 0; i < personCount; i++) {
       walk = random(0, 4);
       switch ( walk ) {
@@ -82,7 +93,7 @@ void personWalk() {
           break;
       }
       animatePerson();
-      timer.previousMillis = timer.currentMillis;
+      timer.peoplePreviousMillis = timer.peopleCurrentMillis;
     }
   }
 }
@@ -109,17 +120,34 @@ void moveSelectedPeople() {
         const VectorF direction = { between.x / distance, between.y / distance };
         people[i].position = { (people[i].position.x + (direction.x * speed)), (people[i].position.y + (direction.y * speed)) };
       }
-      /*if (distance < 1) {
-        for (uint8_t j = 0; j < resourceMax; ++j) {
-          if (tree[j].state == ResourceState::Active && people[i].state == PersonState::Selected || people[i].state == PersonState::Moving) {
-            if (intersect(
+      if (timer.resourceCurrentMillis - timer.resourcePreviousMillis >= 1000) {
+        if (distance < 1) {
+          for (uint8_t j = 0; j < resourceMax; ++j) {
+            if (intersect(tree[j].getBounds(), people[i].getBounds())) {
+              if (tree[j].state == ResourceState::Active) {
+                tree[j].resourceFrame = 1;
+                tree[j].state = ResourceState::Inactive;
+                ++resourceCounter;
+              }
+            }
           }
         }
-      }*/
+        timer.resourcePreviousMillis = timer.resourceCurrentMillis;
+      }
     }
   }
 }
 
+
+void resourceRegen() {
+  if (timer.regenCurrentMillis - timer.regenPreviousMillis >= 5000) {
+    for (uint8_t i = 0; i < resourceMax; ++i) {
+      tree[i].resourceFrame = 0;
+      tree[i].state = ResourceState::Active;
+    }
+    timer.regenPreviousMillis = timer.regenCurrentMillis;
+  }
+}
 
 void drawDebugInfo()
 {
@@ -136,7 +164,7 @@ void drawDebugInfo()
   arduboy.print("");
 
   arduboy.setCursor(0, 40);
-  arduboy.print(personCount);
+  arduboy.print(resourceCounter);
 
   arduboy.setCursor(20, 40);
   arduboy.print(personSelect);

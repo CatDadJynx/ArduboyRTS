@@ -1,8 +1,6 @@
 #include "GameSprites.h"
 #include "camera.h"
 
-uint8_t resourceFrame = 0;
-
 enum class ResourceState : uint8_t
 {
   Active,
@@ -11,11 +9,17 @@ enum class ResourceState : uint8_t
 
 struct Resource
 {
+  uint8_t resourceFrame = 0;
+  static constexpr uint8_t width = 16;
+  static constexpr uint8_t height = 16;
+  
   Point position;
   ResourceState state = ResourceState::Active;
-  static constexpr uint8_t height = 16;
-  static constexpr uint8_t width = 16;
-  Rect rectangle { position.x, position.y, height, width };
+  
+  Rect getBounds() const
+  {
+    return { position.x, position.y, width, height };
+  }
 };
 
 // This will take the same amount of RAM
@@ -39,17 +43,16 @@ void populateResources() {
 void drawRock() {
   for (uint8_t i = 0; i < resourceMax; i++) {
     const Point localPosition = toLocal(rock[i].position);
-    Sprites::drawSelfMasked(localPosition.x, localPosition.y, rockSprite, resourceFrame);
+    Sprites::drawSelfMasked(localPosition.x, localPosition.y, rockSprite, rock[i].resourceFrame);
   }
 }
 
 void drawTree() {
   for (uint8_t i = 0; i < resourceMax; i++) {
     const Point localPosition = toLocal(tree[i].position);
-    Sprites::drawSelfMasked(localPosition.x, localPosition.y, treeSprite, resourceFrame);
+    Sprites::drawSelfMasked(localPosition.x, localPosition.y, treeSprite, tree[i].resourceFrame);
   }
 }
-
 
 void resourceDraw() {
   drawRock();
