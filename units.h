@@ -1,14 +1,29 @@
 
-struct Timer {
-  unsigned long peopleCurrentMillis;
-  unsigned long peoplePreviousMillis = 0;
-  unsigned long resourceCurrentMillis;
-  unsigned long resourcePreviousMillis = 0;
-  unsigned long regenCurrentMillis;
-  unsigned long regenPreviousMillis = 0;
+struct Timer
+{
+  unsigned long currentMillis;
+  unsigned long previousMillis = 0;
+
+  unsigned long getElapsedTime() const
+  {
+    return (this->currentMillis - this->previousMillis);
+  }
+
+  void updatePreviousTime()
+  {
+    this->previousMillis = this->currentMillis;
+  }
+
+  void updateCurrentTime()
+  {
+    this->currentMillis = millis();
+  }
 };
 
-Timer timer;
+Timer peopleTimer;
+Timer resourceTimer;
+Timer regenTimer;
+
 constexpr uint8_t personMax = 40;
 
 uint8_t personFrame = 0;
@@ -75,7 +90,7 @@ void animatePerson() {
 }
 
 void personWalk() {
-  if (timer.peopleCurrentMillis - timer.peoplePreviousMillis >= 500) {
+  if (peopleTimer.getElapsedTime() >= 500) {
     for (uint8_t i = 0; i < personCount; i++) {
       walk = random(0, 4);
       switch ( walk ) {
@@ -93,8 +108,8 @@ void personWalk() {
           break;
       }
       animatePerson();
-      timer.peoplePreviousMillis = timer.peopleCurrentMillis;
     }
+    peopleTimer.updatePreviousTime();
   }
 }
 
@@ -120,7 +135,7 @@ void moveSelectedPeople() {
         const VectorF direction = { between.x / distance, between.y / distance };
         people[i].position = { (people[i].position.x + (direction.x * speed)), (people[i].position.y + (direction.y * speed)) };
       }
-      if (timer.resourceCurrentMillis - timer.resourcePreviousMillis >= 1000) {
+      if (resourceTimer.getElapsedTime() >= 500) {
         if (distance < 1) {
           for (uint8_t j = 0; j < resourceMax; ++j) {
             if (intersect(tree[j].getBounds(), people[i].getBounds())) {
@@ -132,40 +147,45 @@ void moveSelectedPeople() {
             }
           }
         }
-        timer.resourcePreviousMillis = timer.resourceCurrentMillis;
+        resourceTimer.updatePreviousTime();
       }
     }
   }
 }
 
-
 void resourceRegen() {
-  if (timer.regenCurrentMillis - timer.regenPreviousMillis >= 5000) {
+  if (regenTimer.getElapsedTime() >= 1000){
     for (uint8_t i = 0; i < resourceMax; ++i) {
-      tree[i].resourceFrame = 0;
-      tree[i].state = ResourceState::Active;
-    }
-    timer.regenPreviousMillis = timer.regenCurrentMillis;
+       if (tree[i].state == ResourceState::Inactive) {
+          ++tree[i].regenTimerCheck;
+            if (tree[i].regenTimerCheck >= 10) {
+              tree[i].resourceFrame = 0;
+              tree[i].state = ResourceState::Active;
+              tree[i].regenTimerTest = 0;
+            }
+        }
+      }
+    regenTimer.updatePreviousTime(); 
   }
 }
 
 void drawDebugInfo()
-{
-  arduboy.setCursor(0, 0);
-  arduboy.print(rectangle.x);
+  {
+    arduboy.setCursor(0, 0);
+    arduboy.print(rectangle.x);
 
-  arduboy.setCursor(20, 0);
-  arduboy.print(rectangle.y);
+    arduboy.setCursor(20, 0);
+    arduboy.print(rectangle.y);
 
-  arduboy.setCursor(0, 20);
-  arduboy.print("");
+    arduboy.setCursor(0, 20);
+    arduboy.print("");
 
-  arduboy.setCursor(20, 20);
-  arduboy.print("");
+    arduboy.setCursor(20, 20);
+    arduboy.print("");
 
-  arduboy.setCursor(0, 40);
-  arduboy.print(resourceCounter);
+    arduboy.setCursor(0, 40);
+    arduboy.print(resourceCounter);
 
-  arduboy.setCursor(20, 40);
-  arduboy.print(personSelect);
-}
+    arduboy.setCursor(20, 40);
+    arduboy.print(personSelect);
+  }

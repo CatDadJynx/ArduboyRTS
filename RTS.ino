@@ -20,9 +20,9 @@ void loop()
     return;
     arduboy.clear();
   arduboy.pollButtons();
-  timer.peopleCurrentMillis = millis();
-  timer.resourceCurrentMillis = millis();
-  timer.regenCurrentMillis = millis();
+  peopleTimer.updateCurrentTime();
+  resourceTimer.updateCurrentTime();
+  regenTimer.updateCurrentTime();
   player();
   units();
   resources();
