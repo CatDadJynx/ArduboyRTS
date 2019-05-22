@@ -72,7 +72,7 @@ void unitMove()
     for (uint8_t i = 0; i < personMax; ++i) {
       if (people[i].state == PersonState::Selected)
         people[i].state = PersonState::Moving;
-        playerCursor.lastGlobalPosition = playerCursor.globalPosition;
+      playerCursor.lastGlobalPosition = playerCursor.globalPosition;
     }
   }
   moveSelectedPeople();
@@ -89,6 +89,29 @@ void deselectAll() {
   }
 }
 
+void addBuildingAt(PointF point) {
+  house.position.x = (static_cast<uint16_t>(point.x));
+  house.position.y = (static_cast<uint16_t>(point.y));
+  house.position = {point.x, point.y};
+  house.position = toGlobal(house.position);
+}
+
+void addBuildingAtCursor() {
+  if (arduboy.justPressed(B_BUTTON) && !arduboy.pressed(A_BUTTON)) {
+    if (resourceCounter >= 1 && personSelect == 0) {
+      house.draw = true;
+      addBuildingAt(playerCursor.localPosition);
+    }
+  }
+}
+
+void drawBuilding() {
+  addBuildingAtCursor();
+  if (house.draw == true) {
+    Sprites::drawSelfMasked(house.position.x, house.position.y, houseSprite, 0);
+  }
+}
+
 void addPersonAt(int16_t x, int16_t y) {
   // Avoid trying to add more than the maximum
   if (personCount < personMax)
@@ -99,8 +122,8 @@ void addPersonAt(int16_t x, int16_t y) {
   }
 }
 
-void addPersonAtCursor() {
+/*void addPersonAtCursor() {
   if (arduboy.justPressed(B_BUTTON)) {
     addPersonAt(playerCursor.localPosition.x + camera.x, playerCursor.localPosition.y + camera.y);
   }
-}
+  }*/

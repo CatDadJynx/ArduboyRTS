@@ -33,13 +33,13 @@ void loop()
 void units(){
   drawPerson();
   personWalk();
-  //addPersonAtCursor();
+  drawBuilding();
   unitMove();
 }
 
 void resources(){
   resourceDraw();
-  resourceRegen();
+ resourceRegen();
 }
 
 void player(){

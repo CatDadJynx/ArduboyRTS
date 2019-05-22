@@ -13,7 +13,7 @@ struct Resource
   static constexpr uint8_t width = 16;
   static constexpr uint8_t height = 16;
 
-  uint8_t regenTimerCheck = 0;
+  uint8_t regenTimerCheck = 10;
   Point position;
   ResourceState state = ResourceState::Active;
   

@@ -157,17 +157,24 @@ void resourceRegen() {
   if (regenTimer.getElapsedTime() >= 1000){
     for (uint8_t i = 0; i < resourceMax; ++i) {
        if (tree[i].state == ResourceState::Inactive) {
-          ++tree[i].regenTimerCheck;
-            if (tree[i].regenTimerCheck >= 10) {
+          --tree[i].regenTimerCheck;
+            if (tree[i].regenTimerCheck <= 0) {
               tree[i].resourceFrame = 0;
               tree[i].state = ResourceState::Active;
-              tree[i].regenTimerCheck = 0;
+              tree[i].regenTimerCheck = 10;
             }
         }
       }
     regenTimer.updatePreviousTime(); 
   }
 }
+
+struct Building{
+  Point position;
+  bool draw;
+};
+
+Building house;
 
 void drawDebugInfo()
   {
