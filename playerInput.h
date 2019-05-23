@@ -90,27 +90,33 @@ void deselectAll() {
 }
 
 void addBuildingAt(PointF point) {
-  house.position.x = (static_cast<uint16_t>(point.x));
-  house.position.y = (static_cast<uint16_t>(point.y));
-  house.position = {point.x, point.y};
-  house.position = toGlobal(house.position);
+  for (uint8_t i = 0; i < buildingCount; ++i){
+    house[i].position.x = (static_cast<uint16_t>(point.x));
+    house[i].position.y = (static_cast<uint16_t>(point.y));
+    house[i].position = {point.x, point.y};
+  }
 }
 
 void addBuildingAtCursor() {
   if (arduboy.justPressed(B_BUTTON) && !arduboy.pressed(A_BUTTON)) {
     if (resourceCounter >= 1 && personSelect == 0) {
-      house.draw = true;
-      addBuildingAt(playerCursor.localPosition);
+      ++buildingCount;
+      for (uint8_t i = 0; i < buildingCount; ++i){
+      house[i].draw = true;
+      addBuildingAt(playerCursor.globalPosition);
     }
   }
 }
+}
 
 void drawBuilding() {
-  addBuildingAtCursor();
-  if (house.draw == true) {
-    Sprites::drawSelfMasked(house.position.x, house.position.y, houseSprite, 0);
+   for (uint8_t i = 0; i < buildingCount; ++i){
+      if (house[i].draw == true) {
+        const Point localPosition = toLocal(house[i].position);
+        Sprites::drawSelfMasked(localPosition.x, localPosition.y, houseSprite, 0);
+      }
+    }
   }
-}
 
 void addPersonAt(int16_t x, int16_t y) {
   // Avoid trying to add more than the maximum

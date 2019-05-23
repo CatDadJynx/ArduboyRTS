@@ -174,7 +174,9 @@ struct Building{
   bool draw;
 };
 
-Building house;
+uint8_t buildingCount = 0;
+constexpr uint8_t buildingMax = 4;
+Building house[buildingMax];
 
 void drawDebugInfo()
   {
