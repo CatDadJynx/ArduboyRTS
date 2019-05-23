@@ -171,7 +171,6 @@ void resourceRegen() {
 
 struct Building{
   Point position;
-  bool draw;
 };
 
 uint8_t buildingCount = 0;
@@ -193,7 +192,7 @@ void drawDebugInfo()
     arduboy.print("");
 
     arduboy.setCursor(0, 40);
-    arduboy.print(resourceCounter);
+    arduboy.print(buildingCount);
 
     arduboy.setCursor(20, 40);
     arduboy.print(personSelect);
