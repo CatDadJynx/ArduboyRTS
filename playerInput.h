@@ -91,12 +91,8 @@ void deselectAll() {
 
 void addBuildingAt(PointF point) {
   if (buildingCount < buildingMax) {
+    house[buildingCount].position = { static_cast<uint16_t>(point.x), static_cast<uint16_t>(point.y) };
     ++buildingCount;
-  }
-  for (uint8_t i = 0; i < buildingCount; ++i) {
-    house[i].position.x = (static_cast<uint16_t>(point.x));
-    house[i].position.y = (static_cast<uint16_t>(point.y));
-    house[i].position = {point.x, point.y};
   }
 }
 
