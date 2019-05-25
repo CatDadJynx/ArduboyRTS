@@ -384,7 +384,7 @@ void updatePersonMoving(Person & person)
       // (Note: the intersection is more expensive, so do that last)
       if ((deer[j].state == DeerState::Idle) && areIntersecting(deer[j].getBounds(), person.getBounds()))
       {
-        // Harvest the tree
+        // Hunt the deer
         deer[j].hunt();
         --debug.deerCounter;
         ++meatCounter;
@@ -584,7 +584,7 @@ void populateDeer(Deer & deer)
 {
   ++debug.deerCounter;
   deerSprite = deerSpriteLeft;
-  deer.state == DeerState::Idle;
+  deer.state = DeerState::Idle;
   deer.position.x = (random() % 250);
   deer.position.y = (random() % 250);
 }
