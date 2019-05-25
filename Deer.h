@@ -13,7 +13,7 @@ struct Deer
   static constexpr uint8_t height = 8;
   static constexpr uint8_t defaultRegenenerationDelay = 10;
 
-  DeerState state = DeerState::Idle;
+  DeerState state;
   Point2 position;
   uint8_t regenerationDelay;
   
