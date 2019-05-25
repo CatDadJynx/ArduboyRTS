@@ -566,7 +566,6 @@ void regenerateDeer()
       }
       else {
       populateDeer(deer[i]);
-      deer[i].state = DeerState::Idle;
       }
     }
   }
