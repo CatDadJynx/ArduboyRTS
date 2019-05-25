@@ -380,14 +380,17 @@ void updatePersonMoving(Person & person)
     // For all deer
     for (uint8_t j = 0; j < maxDeer; ++j)
     {
-      // If the deer is active and the person is touching the tree
+      // If the deer is active and the person is touching the deer
       // (Note: the intersection is more expensive, so do that last)
-      if ((deer[j].state == DeerState::Idle) && areIntersecting(deer[j].getBounds(), person.getBounds()))
+      if (deer[j].state == DeerState::Idle || deer[j].state == DeerState::Running)
       {
+        if (areIntersecting(deer[j].getBounds(), person.getBounds()))
+        {
         // Hunt the deer
         deer[j].hunt();
-        --debug.deerCounter;
         ++meatCounter;
+        --debug.deerCounter;
+        }
       }
     }
   }
@@ -507,19 +510,21 @@ void updateDeer(Deer & deer)
       updateDeerIdle(deer);
       break;
     case DeerState::Running:
-      //updatePersonSelected(person);
+      updateDeerRunning(deer);
       break;
-   case DeerState::Dead:
+    case DeerState::Dead:
       break;
   }
 }
 
 void updateDeerIdle(Deer & deer)
 {
+  if (checkDeerDistance(deer) < 20) {
+    deer.state = DeerState::Running;
+  }
   // If it's not time to walk, exit immediately
   if (deerTimer.getElapsedTime() < 500)
     return;
-
   const uint8_t walkDirection = (rand() % 4);
 
   // An idle deer just wanders around aimlessly
@@ -546,6 +551,35 @@ void updateDeerIdle(Deer & deer)
   }
 }
 
+const float checkDeerDistance(Deer & deer) {
+  for (uint8_t j = 0; j < maxPeople; ++j)
+  {
+    const Vector2F between = vectorBetween(deer.position, people[j].position);
+    const float distance = between.getMagnitude();
+    return { distance };
+  }
+}
+
+void updateDeerRunning(Deer & deer)
+{
+  for (uint8_t j = 0; j < maxPeople; ++j)
+  {
+    const Vector2F between = vectorBetween(deer.position, people[j].position);
+    const float distance = between.getMagnitude();
+    if (distance < 30)
+    {
+      // Manually normalise the vector
+      const Vector2F direction = { between.x / distance, between.y / distance };
+      deer.position = { (deer.position.x - (direction.x * Deer::movementSpeed)), (deer.position.y - (direction.y * Deer::movementSpeed)) };
+    }
+    else
+    {
+      deer.state = DeerState::Idle;
+    }
+  }
+}
+
+
 void updateDeerAnimation()
 {
   if (deerFrame < 3)
@@ -565,11 +599,12 @@ void regenerateDeer()
         --deer[i].regenerationDelay;
       }
       else {
-      populateDeer(deer[i]);
+        populateDeer(deer[i]);
       }
     }
   }
 }
+
 //populate all deer
 void populateDeer()
 {
@@ -608,7 +643,7 @@ void drawDeer()
 void drawDeer(const Deer & deer)
 {
   // Draw the deer sprite
-  const Point2 localPosition = camera.toLocal(deer.position);
+  const Point2F localPosition = camera.toLocal(deer.position);
   Sprites::drawSelfMasked(localPosition.x, localPosition.y, deerSprite, deerFrame);
 }
 
