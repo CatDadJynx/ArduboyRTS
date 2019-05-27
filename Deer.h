@@ -12,7 +12,7 @@ struct Deer
   static constexpr uint8_t width = 7;
   static constexpr uint8_t height = 8;
   static constexpr uint8_t defaultRegenenerationDelay = 10;
-  static constexpr float movementSpeed = 0.8f;
+  static constexpr float movementSpeed = 0.5f;
 
   DeerState state;
   Point2F position;

@@ -40,7 +40,7 @@ uint8_t buildingCount = 0;
 Building buildings[maxBuildings];
 
 // You start off with 1 person initialised
-uint8_t personCount = 1;
+uint8_t personCount = 2;
 Person people[maxPeople]
 {
   {
@@ -209,7 +209,9 @@ void update()
 
   // Update timer
   if (resourceTimer.getElapsedTime() >= 500)
+  {
     resourceTimer.updatePreviousTime();
+  }
 
   // Handle deer
   updateAllDeer();
@@ -359,37 +361,40 @@ void updatePersonMoving(Person & person)
     const Vector2F direction = { between.x / distance, between.y / distance };
     person.position = { (person.position.x + (direction.x * Person::movementSpeed)), (person.position.y + (direction.y * Person::movementSpeed)) };
   }
-  // Implies (distance <= 1)
-  if (resourceTimer.getElapsedTime() >= 500)
+  if (distance < 1)
   {
-    // For all trees
-    for (uint8_t j = 0; j < maxResources; ++j)
+    if (resourceTimer.getElapsedTime() >= 500)
     {
-      // If the tree is active and the person is touching the tree
-      // (Note: the intersection is more expensive, so do that last)
-      if ((tree[j].state == ResourceState::Active) && areIntersecting(tree[j].getBounds(), person.getBounds()))
+      // For all trees
+      for (uint8_t j = 0; j < maxResources; ++j)
       {
-        // Harvest the tree
-        tree[j].harvest();
-        ++woodCounter;
+        // If the tree is active and the person is touching the tree
+        // (Note: the intersection is more expensive, so do that last)
+        if ((tree[j].state == ResourceState::Active) && areIntersecting(tree[j].getBounds(), person.getBounds()))
+        {
+          // Harvest the tree
+          tree[j].harvest();
+          ++woodCounter;
+        }
       }
     }
-  }
-  if (deerTimer.getElapsedTime() >= 500)
-  {
-    // For all deer
-    for (uint8_t j = 0; j < maxDeer; ++j)
+    //separate
+    else if (deerTimer.getElapsedTime() >= 500)
     {
-      // If the deer is active and the person is touching the deer
-      // (Note: the intersection is more expensive, so do that last)
-      if (deer[j].state == DeerState::Idle || deer[j].state == DeerState::Running)
+      // For all deer
+      for (uint8_t j = 0; j < maxDeer; ++j)
       {
-        if (areIntersecting(deer[j].getBounds(), person.getBounds()))
+        // If the deer is active and the person is touching the deer
+        // (Note: the intersection is more expensive, so do that last)
+        if (deer[j].state == DeerState::Idle || deer[j].state == DeerState::Running)
         {
-        // Hunt the deer
-        deer[j].hunt();
-        ++meatCounter;
-        --debug.deerCounter;
+          if (areIntersecting(deer[j].getBounds(), person.getBounds()))
+          {
+            // Hunt the deer
+            deer[j].hunt();
+            ++meatCounter;
+            --debug.deerCounter;
+          }
         }
       }
     }
@@ -519,9 +524,7 @@ void updateDeer(Deer & deer)
 
 void updateDeerIdle(Deer & deer)
 {
-  if (checkDeerDistance(deer) < 20) {
-    deer.state = DeerState::Running;
-  }
+  startDeerRunning(deer);
   // If it's not time to walk, exit immediately
   if (deerTimer.getElapsedTime() < 500)
     return;
@@ -551,12 +554,19 @@ void updateDeerIdle(Deer & deer)
   }
 }
 
-const float checkDeerDistance(Deer & deer) {
-  for (uint8_t j = 0; j < maxPeople; ++j)
+bool areAnyPeopleInRangeSquared(const Point2F & position, float squaredRange)
+{
+  for (uint8_t i = 0; i < maxPeople; ++i)
+    if (distanceSquared(position, people[i].position) <= squaredRange)
+      return true;
+
+  return false;
+}
+
+void startDeerRunning(Deer & deer) {
+  if (areAnyPeopleInRangeSquared(deer.position, 20 * 20))
   {
-    const Vector2F between = vectorBetween(deer.position, people[j].position);
-    const float distance = between.getMagnitude();
-    return { distance };
+    deer.state = DeerState::Running;
   }
 }
 
@@ -660,7 +670,7 @@ void addBuildingAt(const Point2F & point)
   }
 }
 
-//
+//c
 // Building Drawing
 //
 
