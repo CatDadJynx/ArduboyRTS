@@ -20,27 +20,31 @@ Point2F peopleTargetPosition { cursor.position.x, cursor.position.y };
 
 struct Debug
 {
-  uint8_t deerCounter;
+  uint8_t deerCount;
 };
 
 Debug debug;
 
-constexpr uint8_t maxResources = 30;
+constexpr uint8_t maxResources = 20;
 constexpr uint8_t maxBuildings = 4;
 constexpr uint8_t maxPeople = 40;
 constexpr uint8_t maxDeer = 10;
+constexpr uint8_t buildingMaxCapacity = 5;
 
-uint16_t woodCounter = 0;
-uint16_t meatCounter = 0;
+uint16_t woodCount = 2;
+uint16_t stoneCount = 0;
+uint16_t foodCount = 10;
 Resource rock[maxResources];
 Resource tree[maxResources];
+Resource appleTree[maxResources];
 Deer deer[maxDeer];
 
+constexpr uint8_t requiredFood = 5;
 uint8_t buildingCount = 0;
 Building buildings[maxBuildings];
 
 // You start off with 1 person initialised
-uint8_t personCount = 2;
+uint8_t personCount = 1;
 Person people[maxPeople]
 {
   {
@@ -66,6 +70,7 @@ Timer peopleTimer;
 Timer resourceTimer;
 Timer regenTimer;
 Timer deerTimer;
+Timer deerRegenTimer;
 
 void setup()
 {
@@ -177,7 +182,7 @@ void handleInput()
 
   // Add a building at the player's cursor
   if (arduboy.justPressed(B_BUTTON) && !arduboy.pressed(A_BUTTON))
-    if ((woodCounter >= 1) && (peopleSelected == 0))
+    if ((woodCount >= 1) && (peopleSelected == 0))
       addBuildingAt(camera.toGlobal(cursor.position));
 }
 
@@ -188,12 +193,12 @@ void update()
   peopleTimer.updateCurrentTime();
   resourceTimer.updateCurrentTime();
   deerTimer.updateCurrentTime();
+  deerRegenTimer.updateCurrentTime();
 
   // Handle resource regeneration
   if (regenTimer.getElapsedTime() >= 1000)
   {
     regenerateResources();
-    regenerateDeer();
     regenTimer.updatePreviousTime();
   }
 
@@ -222,18 +227,21 @@ void update()
     updateDeerAnimation();
     deerTimer.updatePreviousTime();
   }
+
 }
 
 void render()
 {
   drawWorld();
   drawUI();
+
 }
 
 void drawWorld()
 {
   // Draw all the 'things'
   drawBuildings();
+  //addPersonAtBuilding();
   drawResources();
   drawPeople();
   drawDeer();
@@ -247,8 +255,23 @@ void drawUI()
   // Draw selection rectangle
   arduboy.drawRect(selectionRectangle.x, selectionRectangle.y, selectionRectangle.width, selectionRectangle.height);
 
+  // draw resource and people counters
+  arduboy.setCursor(0, 0);
+  arduboy.print(personCount);
+
+  arduboy.setCursor(20, 0);
+  arduboy.print(peopleSelected);
+
+  arduboy.setCursor(0, 20);
+  arduboy.print(foodCount);
+
+  arduboy.setCursor(20, 20);
+  arduboy.print(woodCount);
+
+  arduboy.setCursor(0, 40);
+  arduboy.print(stoneCount);
   // Draw debug info
-  drawDebugInfo();
+  //drawDebugInfo();
 }
 
 //
@@ -261,17 +284,6 @@ void deselectAllPeople()
 
   for (uint8_t i = 0; i < maxPeople; ++i)
     people[i].state = PersonState::Idle;
-}
-
-void addPersonAt(float x, float y)
-{
-  // Avoid trying to add more than the maximum
-  if (personCount < maxPeople)
-  {
-    // Person goes on the end of the list
-    people[personCount].position = { x, y };
-    ++personCount;
-  }
 }
 
 void selectPeopleInRectangle(const Rectangle & rectangle)
@@ -374,12 +386,31 @@ void updatePersonMoving(Person & person)
         {
           // Harvest the tree
           tree[j].harvest();
-          ++woodCounter;
+          ++woodCount;
+        }
+        // If the tree is active and the person is touching the tree
+        // (Note: the intersection is more expensive, so do that last)
+        if ((rock[j].state == ResourceState::Active) && areIntersecting(rock[j].getBounds(), person.getBounds()))
+        {
+          // Harvest the tree
+          rock[j].harvest();
+          ++stoneCount;
+        }
+        // If the tree is active and the person is touching the tree
+        // (Note: the intersection is more expensive, so do that last)
+        if ((appleTree[j].state == ResourceState::Active) && areIntersecting(appleTree[j].getBounds(), person.getBounds()))
+        {
+          // Harvest the tree
+          appleTree[j].harvest();
+          ++foodCount;
         }
       }
     }
+  }
+  if (distance > 1 || distance < 1)
+  {
     //separate
-    else if (deerTimer.getElapsedTime() >= 500)
+    if (deerTimer.getElapsedTime() >= 500)
     {
       // For all deer
       for (uint8_t j = 0; j < maxDeer; ++j)
@@ -392,8 +423,8 @@ void updatePersonMoving(Person & person)
           {
             // Hunt the deer
             deer[j].hunt();
-            ++meatCounter;
-            --debug.deerCounter;
+            ++foodCount;
+            --debug.deerCount;
           }
         }
       }
@@ -447,6 +478,7 @@ void drawPerson(const Person & person)
 void regenerateResources()
 {
   for (uint8_t i = 0; i < maxResources; ++i)
+  {
     if (tree[i].state == ResourceState::Inactive)
     {
       if (tree[i].regenerationDelay > 0)
@@ -454,6 +486,21 @@ void regenerateResources()
       else
         tree[i].state = ResourceState::Active;
     }
+    if (rock[i].state == ResourceState::Inactive)
+    {
+      if (rock[i].regenerationDelay > 0)
+        --rock[i].regenerationDelay;
+      else
+        rock[i].state = ResourceState::Active;
+    }
+    if (appleTree[i].state == ResourceState::Inactive)
+    {
+      if (appleTree[i].regenerationDelay > 0)
+        --appleTree[i].regenerationDelay;
+      else
+        appleTree[i].state = ResourceState::Active;
+    }
+  }
 }
 
 void populateResources()
@@ -467,6 +514,10 @@ void populateResources()
     tree[i].state = ResourceState::Active;
     tree[i].position.x = (random() % 250);
     tree[i].position.y = (random() % 250);
+
+    appleTree[i].state = ResourceState::Active;
+    appleTree[i].position.x = (random() % 250);
+    appleTree[i].position.y = (random() % 250);
   }
 }
 
@@ -476,27 +527,19 @@ void populateResources()
 
 void drawResources()
 {
-  drawRocks();
-  drawTrees();
-}
-
-void drawRocks()
-{
   for (uint8_t i = 0; i < maxResources; ++i)
   {
-    const Point2 localPosition = camera.toLocal(rock[i].position);
-    const uint8_t frame = (rock[i].state == ResourceState::Inactive) ? 1 : 0;
-    Sprites::drawSelfMasked(localPosition.x, localPosition.y, rockSprite, frame);
-  }
-}
+    const Point2 treeLocalPosition = camera.toLocal(tree[i].position);
+    const uint8_t treeFrame = (tree[i].state == ResourceState::Inactive) ? 1 : 0;
+    Sprites::drawSelfMasked(treeLocalPosition.x, treeLocalPosition.y, treeSprite, treeFrame);
 
-void drawTrees()
-{
-  for (uint8_t i = 0; i < maxResources; ++i)
-  {
-    const Point2 localPosition = camera.toLocal(tree[i].position);
-    const uint8_t frame = (tree[i].state == ResourceState::Inactive) ? 1 : 0;
-    Sprites::drawSelfMasked(localPosition.x, localPosition.y, treeSprite, frame);
+    const Point2 rockLocalPosition = camera.toLocal(rock[i].position);
+    const uint8_t rockFrame = (rock[i].state == ResourceState::Inactive) ? 1 : 0;
+    Sprites::drawSelfMasked(rockLocalPosition.x, rockLocalPosition.y, rockSprite, rockFrame);
+
+    const Point2 appleTreeLocalPosition = camera.toLocal(appleTree[i].position);
+    const uint8_t appleTreeFrame = (appleTree[i].state == ResourceState::Inactive) ? 1 : 0;
+    Sprites::drawSelfMasked(appleTreeLocalPosition.x, appleTreeLocalPosition.y, appleTreeSprite, appleTreeFrame);
   }
 }
 
@@ -518,6 +561,7 @@ void updateDeer(Deer & deer)
       updateDeerRunning(deer);
       break;
     case DeerState::Dead:
+      regenerateDeer(deer);
       break;
   }
 }
@@ -535,21 +579,17 @@ void updateDeerIdle(Deer & deer)
   {
     case 0:
       deerSprite = deerSpriteLeft;
-      ++deer.position.x;
-      ++deer.position.x;
+      deer.position.x += 2;
       break;
     case 1:
       deerSprite = deerSpriteRight;
-      --deer.position.x;
-      --deer.position.x;
+      deer.position.x -= 2;
       break;
     case 2:
-      ++deer.position.y;
-      ++deer.position.y;
+      deer.position.y += 2;
       break;
     case 3:
-      --deer.position.y;
-      --deer.position.y;
+      deer.position.y -= 2;
       break;
   }
 }
@@ -572,23 +612,22 @@ void startDeerRunning(Deer & deer) {
 
 void updateDeerRunning(Deer & deer)
 {
+  float totalDistance = 0;
   for (uint8_t j = 0; j < maxPeople; ++j)
   {
     const Vector2F between = vectorBetween(deer.position, people[j].position);
     const float distance = between.getMagnitude();
-    if (distance < 30)
+    if (distance < 30 )
     {
+      totalDistance += distance;
       // Manually normalise the vector
-      const Vector2F direction = { between.x / distance, between.y / distance };
-      deer.position = { (deer.position.x - (direction.x * Deer::movementSpeed)), (deer.position.y - (direction.y * Deer::movementSpeed)) };
+      const Vector2F direction = { between.x / totalDistance, between.y / totalDistance };
+      deer.position = { (deer.position.x - (direction.x * deer.movementSpeed)), (deer.position.y - (direction.y * deer.movementSpeed)) };
     }
     else
-    {
       deer.state = DeerState::Idle;
-    }
   }
 }
-
 
 void updateDeerAnimation()
 {
@@ -598,19 +637,17 @@ void updateDeerAnimation()
     deerFrame = 0;
 }
 
-void regenerateDeer()
+void regenerateDeer(Deer & deer)
 {
-  for (uint8_t i = 0; i < maxDeer; ++i)
+  if (deer.state == DeerState::Dead)
   {
-    if (deer[i].state == DeerState::Dead)
+    if (deerRegenTimer.getElapsedTime() >= 1000)
     {
-      if (deer[i].regenerationDelay > 0)
-      {
-        --deer[i].regenerationDelay;
-      }
-      else {
-        populateDeer(deer[i]);
-      }
+      if (deer.regenerationDelay > 0)
+        --deer.regenerationDelay;
+      else
+        populateDeer(deer);
+      deerRegenTimer.updatePreviousTime();
     }
   }
 }
@@ -627,7 +664,7 @@ void populateDeer()
 //populate single deer
 void populateDeer(Deer & deer)
 {
-  ++debug.deerCounter;
+  ++debug.deerCount;
   deerSprite = deerSpriteLeft;
   deer.state = DeerState::Idle;
   deer.position.x = (random() % 250);
@@ -682,6 +719,29 @@ void drawBuildings()
     Sprites::drawSelfMasked(localPosition.x, localPosition.y, houseSprite, 0);
   }
 }
+
+//void addPersonAtBuilding()
+//{
+//  //if building's currentCapacity is less than its maxCapacity
+//  //if currentMeatCount minus previous count is greater than requiredMeat
+//  for (uint8_t i = 0; i < buildingCount; ++i)
+//  {
+//    if (buildings[i].currentCapacity < buildingMaxCapacity)
+//    {
+//      // Person goes on the end of the list
+//      if (foodCount >= requiredFood)
+//      {
+//        if (personCount < maxPeople)
+//        {
+//          Point2 doorway = buildings[i].getDoorway(buildings[i].position);
+//          people[personCount].position = { doorway.x, doorway.y };
+//          ++personCount;
+//          ++buildings[i].currentCapacity;
+//        }
+//      }
+//    }
+//  }
+//}
 //
 // Debugging
 //
@@ -692,7 +752,7 @@ void drawDebugInfo()
   //arduboy.print(selectionRectangle.x);
 
   arduboy.setCursor(20, 0);
-  arduboy.print(debug.deerCounter);
+  arduboy.print(debug.deerCount);
 
   //arduboy.setCursor(0, 20);
   //arduboy.print();
@@ -704,5 +764,5 @@ void drawDebugInfo()
   //arduboy.print(debug);
 
   //arduboy.setCursor(20, 40);
-  //arduboy.print(meatCounter);
+  //arduboy.print(foodCount);
 }

@@ -16,7 +16,7 @@ struct Deer
 
   DeerState state;
   Point2F position;
-  uint8_t regenerationDelay;
+  uint8_t regenerationDelay = 10;
   
   Rectangle getBounds() const
   {
