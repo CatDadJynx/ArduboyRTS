@@ -13,6 +13,14 @@ struct Point2F
 		x {x}, y {y}
 	{
 	}
+
+	// Offset this point by the specified vector
+	Point2F & operator +=(const Vector2F & other)
+	{
+		this->x += other.x;
+		this->y += other.y;
+		return *this;
+	}
 };
 
 Vector2F vectorBetween(Point2F point0, Point2F point1)
