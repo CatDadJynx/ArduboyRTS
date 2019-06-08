@@ -637,16 +637,12 @@ void populateDeer(Deer & deer)
 //
 // Deer Drawing
 //
+
 //All deer
 void drawDeer()
 {
   for (uint8_t i = 0; i < maxDeer; ++i)
-  {
-    if (deer[i].state == DeerState::Idle)
-    {
-      drawDeer(deer[i]);
-    }
-  }
+    drawDeer(deer[i]);
 }
 
 //Single Deer
