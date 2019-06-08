@@ -572,23 +572,113 @@ void startDeerRunning(Deer & deer) {
 
 void updateDeerRunning(Deer & deer)
 {
-  for (uint8_t j = 0; j < maxPeople; ++j)
+  constexpr uint8_t runDistance = 30;
+
+  uint8_t peopleInRange = 0;
+
+  Directions directions = Directions::None;
+
+  for (uint8_t index = 0; index < maxPeople; ++index)
   {
-    const Vector2F between = vectorBetween(deer.position, people[j].position);
-    const float distance = between.getMagnitude();
-    if (distance < 30)
+    const Vector2F distanceVector = vectorBetween(deer.position, people[index].position);
+    const float distance = distanceVector.getMagnitude();
+
+    if (distance <= runDistance)
     {
-      // Manually normalise the vector
-      const Vector2F direction = { between.x / distance, between.y / distance };
-      deer.position = { (deer.position.x - (direction.x * Deer::movementSpeed)), (deer.position.y - (direction.y * Deer::movementSpeed)) };
+      directions |= getMostProminentAxis(distanceVector);
+      ++peopleInRange;
     }
-    else
-    {
-      deer.state = DeerState::Idle;
-    }
+  }
+
+  if(peopleInRange > 0)
+  {
+    // Needs to be normalised because of the way the vectors are stored
+    const Vector2F escapeVector = normalise(getMovementVector(directions));
+    deer.position += (escapeVector * Deer::movementSpeed);
+  }
+  else
+  {
+    deer.state = DeerState::Idle;
   }
 }
 
+Directions getMostProminentAxis(const Vector2F & vector)
+{
+  // Technically this is incorrect if x or y are -0
+  const float absX = (vector.x < 0) ? -vector.x : vector.x;
+  const float absY = (vector.y < 0) ? -vector.y : vector.y;
+
+  if (absX > absY)
+    return ((vector.x < 0) ? Directions::NegativeX : Directions::PositiveX);
+  else
+    return ((vector.y < 0) ? Directions::NegativeY : Directions::PositiveY);
+}
+
+Vector2F getMovementVector(Directions directions)
+{
+  struct CompactVector
+  {
+    int8_t x;
+    int8_t y;
+  };
+
+  static const CompactVector vectors[] PROGMEM
+  {
+    // None
+    { 0, 0 },
+
+    // +X
+    { -1, 0 },
+
+    // +Y
+    { 0, -1 },
+
+    // +X, +Y
+    { -1, -1 },
+
+    // -X
+    { 1, 0 },
+
+    // -X, +X
+    { 0, 1 },
+
+    // -X, +Y
+    { 1, 1 },
+
+    // -X, +X, +Y
+    { 0, 1 },
+
+    // -Y
+    { 0, 1 },
+
+    // -Y, +X
+    { -1, 1 },
+
+    // -Y, +Y
+    { 1, 0 },
+
+    // -Y, +X, +Y
+    { -1, 0 },
+
+    // -Y, -X
+    { 1, 1 },
+
+    // -Y, -X, +X
+    { 0, 1 },
+
+    // -Y, -X, +Y
+    { 1, 0 },
+
+    // -Y, -X, +X, +Y
+    { 0, 0 },
+  };
+
+  const size_t index = static_cast<size_t>(directions);
+  const int8_t x = static_cast<int8_t>(pgm_read_byte(&vectors[index].x));
+  const int8_t y = static_cast<int8_t>(pgm_read_byte(&vectors[index].y));
+
+  return { static_cast<float>(x), static_cast<float>(y) };
+}
 
 void updateDeerAnimation()
 {
@@ -637,16 +727,12 @@ void populateDeer(Deer & deer)
 //
 // Deer Drawing
 //
+
 //All deer
 void drawDeer()
 {
   for (uint8_t i = 0; i < maxDeer; ++i)
-  {
-    if (deer[i].state == DeerState::Idle)
-    {
-      drawDeer(deer[i]);
-    }
-  }
+    drawDeer(deer[i]);
 }
 
 //Single Deer

@@ -25,3 +25,9 @@ inline Vector2F normalise(const Vector2F & vector)
 	const float length = vector.getMagnitude();
 	return { (vector.x / length), (vector.y / length) };
 }
+
+// Scale a vector
+constexpr Vector2F operator *(const Vector2F & left, float right)
+{
+	return { (left.x * right), (left.y * right) };
+}
