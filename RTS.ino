@@ -572,20 +572,33 @@ void startDeerRunning(Deer & deer) {
 
 void updateDeerRunning(Deer & deer)
 {
-  for (uint8_t j = 0; j < maxPeople; ++j)
+  constexpr uint8_t runDistance = 30;
+
+  uint8_t peopleInRange = 0;
+
+  Directions directions = Directions::None;
+
+  for (uint8_t index = 0; index < maxPeople; ++index)
   {
-    const Vector2F between = vectorBetween(deer.position, people[j].position);
-    const float distance = between.getMagnitude();
-    if (distance < 30)
+    const Vector2F distanceVector = vectorBetween(deer.position, people[index].position);
+    const float distance = distanceVector.getMagnitude();
+
+    if (distance <= runDistance)
     {
-      // Manually normalise the vector
-      const Vector2F direction = { between.x / distance, between.y / distance };
-      deer.position = { (deer.position.x - (direction.x * Deer::movementSpeed)), (deer.position.y - (direction.y * Deer::movementSpeed)) };
+      directions |= getMostProminentAxis(distanceVector);
+      ++peopleInRange;
     }
-    else
-    {
-      deer.state = DeerState::Idle;
-    }
+  }
+
+  if(peopleInRange > 0)
+  {
+    // Needs to be normalised because of the way the vectors are stored
+    const Vector2F escapeVector = normalise(getMovementVector(directions));
+    deer.position += (escapeVector * Deer::movementSpeed);
+  }
+  else
+  {
+    deer.state = DeerState::Idle;
   }
 }
 
