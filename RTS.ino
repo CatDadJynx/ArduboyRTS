@@ -589,6 +589,17 @@ void updateDeerRunning(Deer & deer)
   }
 }
 
+Directions getMostProminentAxis(const Vector2F & vector)
+{
+  // Technically this is incorrect if x or y are -0
+  const float absX = (vector.x < 0) ? -vector.x : vector.x;
+  const float absY = (vector.y < 0) ? -vector.y : vector.y;
+
+  if (absX > absY)
+    return ((vector.x < 0) ? Directions::NegativeX : Directions::PositiveX);
+  else
+    return ((vector.y < 0) ? Directions::NegativeY : Directions::PositiveY);
+}
 
 void updateDeerAnimation()
 {
