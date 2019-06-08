@@ -601,6 +601,72 @@ Directions getMostProminentAxis(const Vector2F & vector)
     return ((vector.y < 0) ? Directions::NegativeY : Directions::PositiveY);
 }
 
+Vector2F getMovementVector(Directions directions)
+{
+  struct CompactVector
+  {
+    int8_t x;
+    int8_t y;
+  };
+
+  static const CompactVector vectors[] PROGMEM
+  {
+    // None
+    { 0, 0 },
+
+    // +X
+    { -1, 0 },
+
+    // +Y
+    { 0, -1 },
+
+    // +X, +Y
+    { -1, -1 },
+
+    // -X
+    { 1, 0 },
+
+    // -X, +X
+    { 0, 1 },
+
+    // -X, +Y
+    { 1, 1 },
+
+    // -X, +X, +Y
+    { 0, 1 },
+
+    // -Y
+    { 0, 1 },
+
+    // -Y, +X
+    { -1, 1 },
+
+    // -Y, +Y
+    { 1, 0 },
+
+    // -Y, +X, +Y
+    { -1, 0 },
+
+    // -Y, -X
+    { 1, 1 },
+
+    // -Y, -X, +X
+    { 0, 1 },
+
+    // -Y, -X, +Y
+    { 1, 0 },
+
+    // -Y, -X, +X, +Y
+    { 0, 0 },
+  };
+
+  const size_t index = static_cast<size_t>(directions);
+  const int8_t x = static_cast<int8_t>(pgm_read_byte(&vectors[index].x));
+  const int8_t y = static_cast<int8_t>(pgm_read_byte(&vectors[index].y));
+
+  return { static_cast<float>(x), static_cast<float>(y) };
+}
+
 void updateDeerAnimation()
 {
   if (deerFrame < 3)
